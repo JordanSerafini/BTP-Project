@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { GroupSchema } from './schemas/group.schema';
 import { MessageSchema } from './schemas/message.schema';
+import { UserSchema } from './schemas/user.schema';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MessageSchema } from './schemas/message.schema';
     MongooseModule.forFeature([
       { name: 'Group', schema: GroupSchema },
       { name: 'Message', schema: MessageSchema },
+      { name: 'User', schema: UserSchema },
     ]),
   ],
   controllers: [MessagesController],

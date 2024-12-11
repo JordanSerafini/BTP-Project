@@ -2,7 +2,8 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MessagerieService } from './app.service';
-import { Group, Message } from './@types/interfaces';
+import { Group } from './@types/group.interface';
+import { Message } from './@types/message.interface';
 
 @Controller()
 export class MessagesController {
@@ -63,6 +64,13 @@ export class MessagesController {
     @Payload() payload: { email: string; groupId: string },
   ): Promise<Message[]> {
     return this.service.findAllMessages(payload.email, payload.groupId);
+  }
+
+  @MessagePattern('messages.user.find_all')
+  async findAllMessagesByUser(
+    @Payload() payload: { email: string },
+  ): Promise<Message[]> {
+    return this.service.findAllMessagesByUser(payload.email);
   }
 
   @MessagePattern('messages.find_one')

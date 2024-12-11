@@ -12,9 +12,11 @@ import {
   Delete,
   Patch,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CustomLogger } from '../logging/custom-logger.service';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guards';
 
 interface CreateGroupDto {
   name?: string;
@@ -158,6 +160,27 @@ export class MessagerieController {
     try {
       return await this.messageClient
         .send('messages.find_all', { email, groupId })
+        .toPromise();
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+      throw new HttpException(
+        'Failed to fetch messages',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('perso')
+  @UseGuards(JwtAuthGuard)
+  async findAll(@Request() req) {
+    const email = req.user?.email;
+    if (!email) {
+      throw new BadRequestException('Email are required');
+    }
+    this.logger.log(`Fetching all messages in for ${email}`);
+    try {
+      return await this.messageClient
+        .send('messages.user.find_all', { email })
         .toPromise();
     } catch (error) {
       console.error('Failed to fetch messages:', error);

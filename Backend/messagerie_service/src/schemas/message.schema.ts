@@ -1,10 +1,13 @@
-import { Schema } from 'mongoose';
+import { Schema, Types } from 'mongoose';
 
-export const MessageSchema = new Schema(
-  {
-    groupId: { type: String, required: true },
-    content: { type: String, required: true },
-    email: { type: String, required: true },
+export const MessageSchema = new Schema({
+  groupId: { type: Types.ObjectId, ref: 'Group', required: true },
+  senderId: { type: Types.ObjectId, ref: 'User', required: true },
+  content: { type: String, required: true },
+  status: {
+    type: String,
+    enum: ['sent', 'delivered', 'read'],
+    default: 'sent',
   },
-  { timestamps: true },
-);
+  created_at: { type: Date, default: Date.now },
+});

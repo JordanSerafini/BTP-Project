@@ -146,18 +146,37 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-      - ./Conception/Messagerie_db:/docker-entrypoint-initdb.d
+      - ./Conception/Messagerie_db/:/docker-entrypoint-initdb.d
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: secret
-    networks:
-      - btp_db_network
+    command: ["mongod", "--bind_ip_all"]
     healthcheck:
       test: ["CMD", "mongo", "--username", "admin", "--password", "secret", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - btp_db_network
 
+
+  mongo_express:
+    image: mongo-express:latest
+    container_name: mongo_express
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo_db
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_OPTIONS_EDITORTHEME: "default" 
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: secret
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo_db
+    networks:
+      - btp_db_network
 
   redis:
     image: "redis:alpine"
@@ -171,9 +190,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
 networks:
   btp_db_network:
     driver: bridge
+    attachable: true
 
 volumes:
   pg_data:

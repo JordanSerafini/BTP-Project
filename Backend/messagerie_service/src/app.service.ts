@@ -1,27 +1,39 @@
-// messagerie.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Group, Message } from './@types/interfaces';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { UserDocument } from './@types/user.interface';
+import { GroupDocument } from './@types/group.interface';
+import { MessageDocument } from './@types/message.interface';
 
 @Injectable()
 export class MessagerieService {
   constructor(
-    @InjectModel('Group') private readonly groupModel: Model<Group>,
-    @InjectModel('Message') private readonly messageModel: Model<Message>,
+    @InjectModel('User') private readonly userModel: Model<UserDocument>,
+    @InjectModel('Group') private readonly groupModel: Model<GroupDocument>,
+    @InjectModel('Message')
+    private readonly messageModel: Model<MessageDocument>,
   ) {}
 
-  async findAllGroups(): Promise<Group[]> {
+  private async getUserIdByEmail(email: string): Promise<Types.ObjectId> {
+    const user = await this.userModel.findOne({ email }).exec();
+    if (!user) throw new Error('User not found');
+    return user._id;
+  }
+
+  async findAllGroups(): Promise<GroupDocument[]> {
     return this.groupModel.find().exec();
   }
 
-  async findGroupsByUser(email: string): Promise<Group[]> {
-    return this.groupModel.find({ members: email }).exec();
+  async findGroupsByUser(email: string): Promise<GroupDocument[]> {
+    const userId = await this.getUserIdByEmail(email);
+    return this.groupModel.find({ 'members.userId': userId }).exec();
   }
 
-  async findOneGroup(id: string, email: string): Promise<Group> {
+  async findOneGroup(id: string, email: string): Promise<GroupDocument> {
+    if (!Types.ObjectId.isValid(id)) throw new Error(`Invalid ObjectId: ${id}`);
+    const userId = await this.getUserIdByEmail(email);
     const group = await this.groupModel
-      .findOne({ _id: id, members: email })
+      .findOne({ _id: id, 'members.userId': userId })
       .exec();
     if (!group) throw new Error('Group not found or user not in group');
     return group;
@@ -32,8 +44,23 @@ export class MessagerieService {
     name?: string;
     members: string[];
     createdBy: string;
-  }): Promise<Group> {
-    const group = new this.groupModel(payload);
+  }): Promise<GroupDocument> {
+    const creatorId = await this.getUserIdByEmail(payload.createdBy);
+    const membersIds = await Promise.all(
+      payload.members.map((m) => this.getUserIdByEmail(m)),
+    );
+    const members = membersIds.map((userId) => ({
+      userId,
+      joinedAt: new Date(),
+    }));
+
+    const group = new this.groupModel({
+      type: payload.type,
+      name: payload.name || null,
+      members: members,
+      createdBy: creatorId,
+    });
+
     return group.save();
   }
 
@@ -41,36 +68,55 @@ export class MessagerieService {
     id: string,
     data: { name?: string },
     email: string,
-  ): Promise<Group> {
+  ): Promise<GroupDocument> {
+    if (!Types.ObjectId.isValid(id)) throw new Error(`Invalid ObjectId: ${id}`);
+    const userId = await this.getUserIdByEmail(email);
     const group = await this.groupModel
-      .findOne({ _id: id, members: email })
+      .findOne({ _id: id, 'members.userId': userId })
       .exec();
     if (!group) throw new Error('Group not found or not authorized');
-    if (data.name) group.name = data.name;
+    if (data.name !== undefined) group.name = data.name;
     return group.save();
   }
 
-  async removeGroup(id: string, email: string): Promise<Group> {
+  async removeGroup(id: string, email: string): Promise<GroupDocument> {
+    if (!Types.ObjectId.isValid(id)) throw new Error(`Invalid ObjectId: ${id}`);
+    const userId = await this.getUserIdByEmail(email);
     const group = await this.groupModel
-      .findOneAndDelete({ _id: id, members: email })
+      .findOneAndDelete({ _id: id, 'members.userId': userId })
       .exec();
     if (!group) throw new Error('Group not found or not authorized');
     return group;
   }
 
-  async findAllMessages(email: string, groupId: string): Promise<Message[]> {
+  async findAllMessages(
+    email: string,
+    groupId: string,
+  ): Promise<MessageDocument[]> {
+    if (!Types.ObjectId.isValid(groupId))
+      throw new Error(`Invalid ObjectId: ${groupId}`);
+    const userId = await this.getUserIdByEmail(email);
     const group = await this.groupModel
-      .findOne({ _id: groupId, members: email })
+      .findOne({ _id: groupId, 'members.userId': userId })
       .exec();
     if (!group) throw new Error('Not authorized or group not found');
-    return this.messageModel.find({ groupId }).exec();
+    return this.messageModel.find({ groupId: group._id }).exec();
   }
 
-  async findOneMessage(email: string, id: string): Promise<Message> {
+  async findAllMessagesByUser(email: string): Promise<MessageDocument[]> {
+    const userId = await this.getUserIdByEmail(email);
+    const messages = await this.messageModel.find({ senderId: userId }).exec();
+    return messages;
+  }
+
+  async findOneMessage(email: string, id: string): Promise<MessageDocument> {
+    if (!Types.ObjectId.isValid(id)) throw new Error(`Invalid ObjectId: ${id}`);
+    const userId = await this.getUserIdByEmail(email);
     const message = await this.messageModel.findById(id).exec();
     if (!message) throw new Error('Message not found');
+
     const group = await this.groupModel
-      .findOne({ _id: message.groupId, members: email })
+      .findOne({ _id: message.groupId, 'members.userId': userId })
       .exec();
     if (!group) throw new Error('Not authorized to view this message');
     return message;
@@ -80,12 +126,20 @@ export class MessagerieService {
     email: string,
     groupId: string,
     content: string,
-  ): Promise<Message> {
+  ): Promise<MessageDocument> {
+    if (!Types.ObjectId.isValid(groupId))
+      throw new Error(`Invalid ObjectId: ${groupId}`);
+    const userId = await this.getUserIdByEmail(email);
     const group = await this.groupModel
-      .findOne({ _id: groupId, members: email })
+      .findOne({ _id: groupId, 'members.userId': userId })
       .exec();
     if (!group) throw new Error('Not authorized or group not found');
-    const message = new this.messageModel({ groupId, content, email });
+
+    const message = new this.messageModel({
+      groupId: group._id,
+      senderId: userId,
+      content,
+    });
     return message.save();
   }
 
@@ -93,16 +147,23 @@ export class MessagerieService {
     email: string,
     id: string,
     content?: string,
-  ): Promise<Message> {
-    const message = await this.messageModel.findOne({ _id: id, email }).exec();
+  ): Promise<MessageDocument> {
+    if (!Types.ObjectId.isValid(id)) throw new Error(`Invalid ObjectId: ${id}`);
+    const userId = await this.getUserIdByEmail(email);
+    const message = await this.messageModel
+      .findOne({ _id: id, senderId: userId })
+      .exec();
     if (!message) throw new Error('Message not found or not authorized');
-    if (content) message.content = content;
+
+    if (content !== undefined) message.content = content;
     return message.save();
   }
 
-  async removeMessage(email: string, id: string): Promise<Message> {
+  async removeMessage(email: string, id: string): Promise<MessageDocument> {
+    if (!Types.ObjectId.isValid(id)) throw new Error(`Invalid ObjectId: ${id}`);
+    const userId = await this.getUserIdByEmail(email);
     const message = await this.messageModel
-      .findOneAndDelete({ _id: id, email })
+      .findOneAndDelete({ _id: id, senderId: userId })
       .exec();
     if (!message) throw new Error('Message not found or not authorized');
     return message;
