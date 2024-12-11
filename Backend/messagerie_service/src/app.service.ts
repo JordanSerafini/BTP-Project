@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { UserDocument } from './@types/user.interface';
@@ -14,10 +14,13 @@ export class MessagerieService {
     private readonly messageModel: Model<MessageDocument>,
   ) {}
 
-  private async getUserIdByEmail(email: string): Promise<Types.ObjectId> {
+  async getUserIdByEmail(email: string): Promise<string> {
     const user = await this.userModel.findOne({ email }).exec();
-    if (!user) throw new Error('User not found');
-    return user._id;
+    if (!user) {
+      throw new NotFoundException(`User not found for email: ${email}`);
+    }
+    //console.log(`User ID for ${email}: ${user._id}`);
+    return user._id.toString();
   }
 
   async findAllGroups(): Promise<GroupDocument[]> {
@@ -105,7 +108,17 @@ export class MessagerieService {
 
   async findAllMessagesByUser(email: string): Promise<MessageDocument[]> {
     const userId = await this.getUserIdByEmail(email);
-    const messages = await this.messageModel.find({ senderId: userId }).exec();
+    console.log(`Looking for messages with senderId: ${userId}`);
+    console.log(`Type of userId: ${typeof userId}`);
+    const objectId = new Types.ObjectId(userId);
+    console.log(`Generated ObjectId: ${objectId}`);
+
+    console.log(`Type of objectId: ${typeof objectId}`);
+    const messages = await this.messageModel
+      .find({ senderId: objectId })
+      .exec();
+
+    console.log(`Messages found: ${messages.length}`);
     return messages;
   }
 
