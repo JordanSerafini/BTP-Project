@@ -1,0 +1,128 @@
+@startuml db_schema
+
+entity "users" {
+    * id : SERIAL [PK]
+    * username : TEXT
+    * firstname : TEXT
+    * lastname : TEXT
+    * password : TEXT
+    * email : TEXT [UNIQUE]
+    * image : TEXT
+    * phone : TEXT
+    * age : INTEGER
+    * address : TEXT
+    * city : TEXT
+    * role : TEXT [DEFAULT: 'user']
+    * created_at : TIMESTAMP [DEFAULT: CURRENT_TIMESTAMP]
+}
+
+entity "personnel" {
+    * id : SERIAL [PK]
+    * firstname : TEXT
+    * lastname : TEXT
+    * emploi : TEXT
+    * email : TEXT [UNIQUE]
+    * phone : TEXT
+    * age : INTEGER
+}
+
+entity "outils" {
+    * id : SERIAL [PK]
+    * titre : TEXT
+    * description : TEXT
+    * image : TEXT
+    * quantité : INTEGER
+    * quantité_disponible : INTEGER
+    * notes : TEXT
+}
+
+entity "materiel" {
+    * id : SERIAL [PK]
+    * titre : TEXT
+    * description : TEXT
+    * image : TEXT
+    * quantité : INTEGER
+    * quantité_disponible : INTEGER
+    * prix_ht : DECIMAL(10, 2)
+    * prix_ttc : DECIMAL(10, 2)
+    * notes : TEXT
+}
+
+entity "client" {
+    * id : SERIAL [PK]
+    * nom : TEXT
+    * prenom : TEXT
+    * adresse : TEXT
+    * ville : TEXT
+    * code_postal : TEXT
+    * email : TEXT
+    * phone : TEXT
+    * notes : TEXT
+}
+
+entity "prestation" {
+    * id : SERIAL [PK]
+    * titre : TEXT
+    * description : TEXT
+    * prix_ht : DECIMAL(10, 2)
+    * prix_ttc : DECIMAL(10, 2)
+    * notes : TEXT
+}
+
+entity "devis" {
+    * id : SERIAL [PK]
+    * titre : TEXT
+    * notes : TEXT
+    * client_id : INTEGER [FK -> client.id]
+    * created_at : TIMESTAMP [DEFAULT: CURRENT_TIMESTAMP]
+}
+
+entity "devis_prestation" {
+    * id : SERIAL [PK]
+    * devis_id : INTEGER [FK -> devis.id]
+    * prestation_id : INTEGER [FK -> prestation.id]
+    * quantite : INTEGER
+}
+
+entity "devis_materiel" {
+    * id : SERIAL [PK]
+    * devis_id : INTEGER [FK -> devis.id]
+    * materiel_id : INTEGER [FK -> materiel.id]
+    * quantite : INTEGER
+}
+
+entity "chantiers" {
+    * id : SERIAL [PK]
+    * titre : TEXT
+    * description : TEXT
+    * adresse : TEXT
+    * ville : TEXT
+    * code_postal : TEXT
+    * date_debut : DATE
+    * date_fin : DATE
+    * client_id : INTEGER [FK -> client.id]
+    * devis_id : INTEGER [FK -> devis.id]
+    * notes : TEXT
+}
+
+entity "chantier_personnel" {
+    * id : SERIAL [PK]
+    * chantier_id : INTEGER [FK -> chantiers.id]
+    * personnel_id : INTEGER [FK -> personnel.id]
+}
+
+entity "chantier_outils" {
+    * id : SERIAL [PK]
+    * chantier_id : INTEGER [FK -> chantiers.id]
+    * outil_id : INTEGER [FK -> outils.id]
+    * quantite : INTEGER
+}
+
+client ||--o{ devis : "has"
+prestation ||--o{ devis_prestation : "is part of"
+materiel ||--o{ devis_materiel : "is included in"
+client ||--o{ chantiers : "has"
+chantiers ||--o{ chantier_personnel : "is assigned"
+chantiers ||--o{ chantier_outils : "uses"
+
+@enduml
