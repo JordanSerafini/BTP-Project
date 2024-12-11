@@ -4,6 +4,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtAuthGuard } from './guards/jwt-auth.guards';
 import { UsersController } from './controller/users.controller';
 import { AuthController } from './controller/auth.controller';
+import { MessagerieController } from './controller/messagerie.controller';
 
 @Module({
   imports: [
@@ -28,9 +29,17 @@ import { AuthController } from './controller/auth.controller';
           port: 3002,
         },
       },
+      {
+        name: 'MESSAGERIE_SERVICE',
+        transport: Transport.TCP,
+        options: {
+          host: 'messagerie_service',
+          port: 3333,
+        },
+      },
     ]),
   ],
-  controllers: [UsersController, AuthController],
+  controllers: [UsersController, AuthController, MessagerieController],
   providers: [JwtAuthGuard],
 })
 export class AppModule {}

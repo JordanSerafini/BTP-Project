@@ -111,6 +111,34 @@ services:
       - "5050:80"
     restart: always
 
+
+  messagerie_service:
+    image: node:alpine
+    container_name: messagerie_service
+    working_dir: /app
+    volumes:
+      - ./Backend/messagerie_service:/app
+      - /app/node_modules
+    ports:
+      - 3333:3333
+    networks:
+      - btp_db_network
+    environment:
+      MONGO_URL: "mongodb://admin:secret@mongo_db:27017/messagerie_db?authSource=admin"
+      REDIS_URL: "redis://redis:6379"
+    command: sh -c "npm install && npm run start:dev"
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://api_gateway:3000/messages/health"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
+    #   start_period: 10s
+    # depends_on:
+    #   mongo_db:
+    #     condition: service_healthy
+    #   redis:
+    #     condition: service_healthy
+
   mongo_db:
     image: mongo:latest
     container_name: mongo_db
@@ -119,13 +147,17 @@ services:
     volumes:
       - mongo_data:/data/db
       - ./Conception/Messagerie_db:/docker-entrypoint-initdb.d
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
     networks:
       - btp_db_network
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongo", "--username", "admin", "--password", "secret", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
+
 
   redis:
     image: "redis:alpine"
@@ -139,7 +171,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
 networks:
   btp_db_network:
     driver: bridge

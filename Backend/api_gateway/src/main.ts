@@ -24,6 +24,15 @@ async function bootstrap() {
     },
   });
 
+  // Connexion au microservice messagerie_service
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.TCP,
+    options: {
+      port: 3333,
+      // host: 'messagerie_service',
+    },
+  });
+
   await app.startAllMicroservices();
   await app.listen(3000);
 
