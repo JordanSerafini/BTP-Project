@@ -4,38 +4,51 @@ import {
   IsOptional,
   IsString,
   IsInt,
-  IsUrl,
-  IsPhoneNumber,
+  Min,
+  Max,
 } from 'class-validator';
 
 export class CreateUserDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   username: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
+  firstname?: string;
+
+  @IsOptional()
+  @IsString()
+  lastname?: string;
+
+  @IsString()
+  @IsNotEmpty()
   password: string;
 
-  @IsNotEmpty()
   @IsEmail()
   email: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
   image?: string;
 
   @IsOptional()
-  @IsPhoneNumber('FR')
+  @IsString()
   phone?: string;
 
   @IsOptional()
   @IsInt()
+  @Min(18)
+  @Max(100)
   age?: number;
 
   @IsOptional()
   @IsString()
-  adress?: string;
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  postalcode?: string;
 
   @IsOptional()
   @IsString()
@@ -43,5 +56,5 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  favorites?: string;
+  roles?: string;
 }

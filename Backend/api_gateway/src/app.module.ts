@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { JwtAuthGuard } from './guards/jwt-auth.guards';
+import { UsersController } from './controller/users.controller';
+import { AuthController } from './controller/auth.controller';
 
 @Module({
   imports: [
@@ -22,13 +24,13 @@ import { JwtAuthGuard } from './guards/jwt-auth.guards';
         name: 'USER_SERVICE',
         transport: Transport.TCP,
         options: {
-          host: 'user_service',
+          host: 'users_service',
           port: 3002,
         },
       },
     ]),
   ],
-  controllers: [],
+  controllers: [UsersController, AuthController],
   providers: [JwtAuthGuard],
 })
 export class AppModule {}

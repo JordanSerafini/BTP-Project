@@ -2,9 +2,10 @@ import {
   Controller,
   Post,
   Body,
-  Inject,
-  HttpStatus,
   HttpException,
+  HttpStatus,
+  Inject,
+  Get,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -17,25 +18,43 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginDto: { email: string; password: string }) {
-    return this.authServiceClient.send({ cmd: 'login' }, loginDto).toPromise();
+    try {
+      return await this.authServiceClient
+        .send({ cmd: 'login' }, loginDto)
+        .toPromise();
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw new HttpException('Login failed', HttpStatus.UNAUTHORIZED);
+    }
   }
 
   @Post('register')
   async register(
-    @Body() registerDto: { email: string; password: string; nom; prenom; role },
+    @Body()
+    registerDto: {
+      email: string;
+      password: string;
+      nom: string;
+      prenom: string;
+      role: string;
+    },
   ) {
-    return this.authServiceClient
-      .send({ cmd: 'register' }, registerDto)
-      .toPromise();
+    try {
+      return await this.authServiceClient
+        .send({ cmd: 'register' }, registerDto)
+        .toPromise();
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw new HttpException('Registration failed', HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Post('logout')
   async logout(@Body() logoutDto: { user: { id: string; email: string } }) {
     try {
-      const result = await this.authServiceClient
+      return await this.authServiceClient
         .send({ cmd: 'logout' }, logoutDto)
         .toPromise();
-      return result;
     } catch (error) {
       console.error('Logout failed:', error);
       throw new HttpException(
@@ -43,5 +62,10 @@ export class AuthController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  @Get('health')
+  healthCheck() {
+    return { status: 200 };
   }
 }

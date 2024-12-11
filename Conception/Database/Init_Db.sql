@@ -1,10 +1,25 @@
-CREATE DATABASE btp_db;
+-- Vérifie si la base de données "btp_db" existe avant de la créer
+DO $$ BEGIN
+   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'btp_db') THEN
+      CREATE DATABASE btp_db;
+   END IF;
+END $$;
+
 \connect btp_db
-CREATE USER user WITH ENCRYPTED PASSWORD 'password';
-GRANT ALL PRIVILEGES ON DATABASE btp_db TO user;
 
-BEGIN;
+-- Crée l'utilisateur uniquement s'il n'existe pas
+DO $$ BEGIN
+   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'dev') THEN
+      CREATE USER dev WITH ENCRYPTED PASSWORD 'password';
+   END IF;
+END $$;
 
+GRANT ALL PRIVILEGES ON DATABASE btp_db TO dev;
+
+-- Accorde les privilèges à l'utilisateur
+GRANT ALL PRIVILEGES ON DATABASE btp_db TO dev;
+
+-- Crée les tables uniquement si elles n'existent pas
 CREATE TABLE IF NOT EXISTS "users" (
     "id" SERIAL PRIMARY KEY,
     "username" TEXT NOT NULL,
@@ -16,10 +31,12 @@ CREATE TABLE IF NOT EXISTS "users" (
     "phone" TEXT,
     "age" INTEGER,
     "address" TEXT,
+    "postalcode" TEXT,
     "city" TEXT,
     "role" TEXT NOT NULL DEFAULT 'user',
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
 
 CREATE TABLE IF NOT EXISTS "personnel" (
     "id" SERIAL PRIMARY KEY,
@@ -122,7 +139,3 @@ CREATE TABLE IF NOT EXISTS "chantier_outils" (
     "outil_id" INTEGER NOT NULL REFERENCES outils(id) ON DELETE CASCADE,
     "quantite" INTEGER NOT NULL
 );
-
-
-
-COMMIT;

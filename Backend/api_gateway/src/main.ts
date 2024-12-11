@@ -11,6 +11,7 @@ async function bootstrap() {
     transport: Transport.TCP,
     options: {
       port: 3001,
+      // host: 'authentification_service',
     },
   });
 
@@ -19,6 +20,7 @@ async function bootstrap() {
     transport: Transport.TCP,
     options: {
       port: 3002,
+      // host: 'users_service',
     },
   });
 

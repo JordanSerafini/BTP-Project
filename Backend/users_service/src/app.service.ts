@@ -41,14 +41,17 @@ export class UsersService {
     this.logger.log('Creating a new user');
     const {
       username,
+      firstname,
+      lastname,
       password,
       email,
       image,
       phone,
       age,
       address,
+      postalcode,
       city,
-      favorites,
+      roles,
     } = createUserDto;
 
     // Vérification des doublons (email)
@@ -64,21 +67,24 @@ export class UsersService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const query = `
-      INSERT INTO users (username, password, email, image, phone, age, address, city, favorites, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+      INSERT INTO users (username, firstname, lastname, password, email, image, phone, age, address, postalcode, city, role, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
       RETURNING *;
-    `;
+      `;
 
     const values = [
       username,
+      firstname,
+      lastname,
       hashedPassword,
       email,
       image || null,
       phone || null,
       age || null,
       address || null,
+      postalcode || null,
       city || null,
-      favorites || null,
+      roles || 'user', // Assurez-vous d'avoir une valeur par défaut pour le rôle
     ];
 
     const result = await this.pool.query(query, values);
@@ -90,7 +96,7 @@ export class UsersService {
 
   async update(email: string, updateUserDto: UpdateUserDto): Promise<User> {
     this.logger.log(`Updating user with email: ${email}`);
-    const { username, password, image, phone, age, address, city, favorites } =
+    const { username, password, image, phone, age, address, city } =
       updateUserDto;
 
     const existingUser = await this.pool.query(
@@ -107,17 +113,16 @@ export class UsersService {
     }
 
     const query = `
-      UPDATE users
-      SET username = COALESCE($1, username),
-          password = COALESCE($2, password),
-          image = COALESCE($3, image),
-          phone = COALESCE($4, phone),
-          age = COALESCE($5, age),
-          address = COALESCE($6, address),
-          city = COALESCE($7, city),
-          favorites = COALESCE($8, favorites)
-      WHERE email = $9
-      RETURNING *;
+    UPDATE users
+    SET username = COALESCE($1, username),
+        password = COALESCE($2, password),
+        image = COALESCE($3, image),
+        phone = COALESCE($4, phone),
+        age = COALESCE($5, age),
+        address = COALESCE($6, address),
+        city = COALESCE($7, city)
+    WHERE email = $8
+    RETURNING *;
     `;
 
     const values = [
@@ -128,7 +133,6 @@ export class UsersService {
       age || null,
       address || null,
       city || null,
-      favorites || null,
       email,
     ];
 
