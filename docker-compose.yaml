@@ -152,10 +152,11 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: secret
     command: ["mongod", "--bind_ip_all"]
     healthcheck:
-      test: ["CMD", "mongo", "--username", "admin", "--password", "secret", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--username", "admin", "--password", "secret", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
+
     networks:
       - btp_db_network
 

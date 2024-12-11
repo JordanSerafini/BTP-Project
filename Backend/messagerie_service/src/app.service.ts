@@ -110,12 +110,13 @@ export class MessagerieService {
     const userId = await this.getUserIdByEmail(email);
     console.log(`Looking for messages with senderId: ${userId}`);
     console.log(`Type of userId: ${typeof userId}`);
-    const objectId = new Types.ObjectId(userId);
-    console.log(`Generated ObjectId: ${objectId}`);
 
-    console.log(`Type of objectId: ${typeof objectId}`);
+    // Conversion en ObjectId
+    const objectId = new Types.ObjectId(userId);
+    console.log(`Converted ObjectId: ${objectId}`);
+
     const messages = await this.messageModel
-      .find({ senderId: objectId })
+      .find({ senderId: objectId }) // Filtre par ObjectId
       .exec();
 
     console.log(`Messages found: ${messages.length}`);
