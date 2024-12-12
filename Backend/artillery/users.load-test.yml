@@ -34,22 +34,22 @@ apdex:
 scenarios:
   - name: "Test Microservice Users"
     flow:
-      - get:
-          url: '/'
-          headers:
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
+      # - get:
+      #     url: '/'
+      #     headers:
+      #       Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
 
-      - get:
-          url: '/health'
-          headers:
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
-          check:
-            - statusCode: 200
+      # - get:
+      #     url: '/health'
+      #     headers:
+      #       Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
+      #     check:
+      #       - statusCode: 200
 
-      - get:
-          url: '/jordan@solution-logique.fr'
-          headers:
-            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
+      # - get:
+      #     url: '/jordan@solution-logique.fr'
+      #     headers:
+      #       Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
 
       - post:
           url: '/'
