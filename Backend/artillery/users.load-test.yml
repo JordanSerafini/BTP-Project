@@ -1,0 +1,73 @@
+config:
+  target: 'http://sli.tinkerbell-pentest.me/api/users'
+  phases:
+    - duration: 30
+      arrivalRate: 2
+      rampTo: 12
+      name: Warm up phase
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 15
+      name: Ramp up load
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 25
+      name: Spike phase
+    - duration: 30
+      arrivalRate: 25
+      rampTo: 5
+      name: Recovery phase
+  plugins:
+    ensure: {}
+    metrics-by-endpoint: {}
+    apdex: {}
+  ensure:
+    maxErrorRate: 0.01
+    thresholds:
+      - http.response_time.p99: 850
+      - http.response_time.p95: 500
+      - http.response_time.mean: 300
+      - http.requests.count: 1000
+apdex:
+  threshold: 500
+
+scenarios:
+  - name: "Test Microservice Users"
+    flow:
+      - get:
+          url: '/'
+          headers:
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
+
+      - get:
+          url: '/health'
+          headers:
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
+          check:
+            - statusCode: 200
+
+      - get:
+          url: '/jordan@solution-logique.fr'
+          headers:
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
+
+      - post:
+          url: '/'
+          json:
+            username: "usertest"
+            firstname: "usertest"
+            lastname: "usertest"
+            password: "pass123"
+            email: "usertest@solution-logique.fr"
+            image: ""
+            phone: "0627086475"
+            age: 35
+            address: "7 avenue de loverchy"
+            postalcode: "74000"
+            city: "annecy"
+            roles: "admin"
+
+      - delete:
+          url: '/usertest@solution-logique.fr'
+          headers:
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'

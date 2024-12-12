@@ -1,0 +1,75 @@
+config:
+  target: 'http://sli.tinkerbell-pentest.me/api'  
+  
+  phases:
+    # Phase 1 : Échauffement progressif
+    - duration: 30
+      arrivalRate: 2
+      rampTo: 12
+      name: Warm up phase
+    
+    # Phase 2 : Charge modérée
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 15
+      name: Ramp up load
+    
+    # Phase 3 : Charge de pointe
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 25
+      name: Spike phase
+
+    # Phase 4 : Rétablissement après la charge de pointe
+    - duration: 30
+      arrivalRate: 25
+      rampTo: 5
+      name: Recovery phase
+
+  plugins:
+    ensure: {}
+    metrics-by-endpoint: {}
+    apdex: {}
+
+  ensure:
+  maxErrorRate: 0.01 
+  thresholds:
+    - http.response_time.p99: 850
+    - http.response_time.p95: 500
+    - http.response_time.mean: 300  
+    - http.requests.count: 1000 
+
+apdex:
+  threshold: 500  
+ 
+
+scenarios:         
+  #* ---------------------------------------------------------- Scénario pour l'authentification
+  - name: "Test Microservice Authentification"
+    flow:
+      - post:
+          url: '/login'
+          json:
+            email: 'jordan@solution-logique.fr'
+            password: 'pass123'
+      - save:
+          path: '$.data.token' 
+      - check:
+          - json:
+            data.token: true
+
+      # - post:
+      #     url: '/logout'
+      #     json:
+      #       email: 'jordan@solution-logique.fr'
+
+  #* ---------------------------------------------------------- Scénario pour les messages
+  - name: "Test Microservice Message"
+    flow:
+      - get:
+          url: '/messages/groups'
+          headers:
+            Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvcmRhbkBzb2x1dGlvbi1sb2dpcXVlLmZyIiwic3ViIjoxLCJpYXQiOjE3MzM5MzI1MDQsImV4cCI6MTc2OTkzMjUwNH0.vNal4huZou7SXCet9vJBjBKzkyGA_7b4ARItjTTUr5o'
+          qs:
+            limit: 20
+            offset: 0
