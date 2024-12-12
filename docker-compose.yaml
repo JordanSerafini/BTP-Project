@@ -160,12 +160,6 @@ services:
       timeout: 5s
       retries: 5
 
-
-
-
-
-
-
   mongo_express:
     image: mongo-express:latest
     container_name: mongo_express
@@ -189,6 +183,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  frontend:
+    image: node:alpine
+    container_name: frontend
+    working_dir: /app
+    volumes:
+      - ./Frontend/Web:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - btp_db_network
+    command: sh -c "npm install && npm run dev -- --host"
+
 
   redis:
     image: "redis:alpine"
