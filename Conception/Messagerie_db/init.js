@@ -1,5 +1,5 @@
 // Connexion à MongoDB
-let db = connect("mongodb://admin:secret@mongo_db:27017/admin");
+let db = connect("mongodb://admin:secret@localhost:27017/admin");
 
 // Sélectionner la base de données cible
 db = db.getSiblingDB("messagerie_db");
@@ -7,7 +7,7 @@ db = db.getSiblingDB("messagerie_db");
 // Création des utilisateurs
 let user1 = db.users.insertOne({
   username: "jordan",
-  email: "jean@example.com",
+  email: "jordan@solution-logique.fr",
   password: "hashed_password_jean",
   profile_image: null,
   status: "online",

@@ -10,12 +10,14 @@ services:
       - 3000:3000
     networks:
       - btp_db_network
+      - mongo_network
     command: sh -c "npm install && npm run start:dev"
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
     #   interval: 10s
     #   timeout: 5s
     #   retries: 3
+
 
   authentification_service:
     image: node:alpine
@@ -122,7 +124,7 @@ services:
     ports:
       - 3333:3333
     networks:
-      - btp_db_network
+      - mongo_network
     environment:
       MONGO_URL: "mongodb://admin:secret@mongo_db:27017/messagerie_db?authSource=admin"
       REDIS_URL: "redis://redis:6379"
@@ -133,17 +135,18 @@ services:
     #   timeout: 5s
     #   retries: 5
     #   start_period: 10s
-    # depends_on:
-    #   mongo_db:
-    #     condition: service_healthy
-    #   redis:
-    #     condition: service_healthy
-
+    depends_on:
+      - mongo_db
+      - redis
+      
   mongo_db:
     image: mongo:latest
     container_name: mongo_db
     ports:
       - "27017:27017"
+    restart: always
+    networks:
+      - mongo_network
     volumes:
       - mongo_data:/data/db
       - ./Conception/Messagerie_db/:/docker-entrypoint-initdb.d
@@ -152,13 +155,15 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: secret
     command: ["mongod", "--bind_ip_all"]
     healthcheck:
-      test: ["CMD", "mongosh", "--username", "admin", "--password", "secret", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-    networks:
-      - btp_db_network
+
+
+
+
 
 
   mongo_express:
@@ -172,12 +177,18 @@ services:
       ME_CONFIG_BASICAUTH_PASSWORD: password
       ME_CONFIG_MONGODB_ADMINUSERNAME: admin
       ME_CONFIG_MONGODB_ADMINPASSWORD: secret
+      ME_CONFIG_MONGODB_URL: "mongodb://admin:secret@mongo_db:27017/messagerie_db?authSource=admin"
     ports:
       - "8081:8081"
     depends_on:
       - mongo_db
     networks:
-      - btp_db_network
+      - mongo_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   redis:
     image: "redis:alpine"
@@ -194,6 +205,10 @@ services:
 
 networks:
   btp_db_network:
+    driver: bridge
+    attachable: true
+  
+  mongo_network:
     driver: bridge
     attachable: true
 
