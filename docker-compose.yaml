@@ -251,3 +251,4 @@ networks:
 volumes:
   pg_data:
   mongo_data:
+  pgadmin_data:
