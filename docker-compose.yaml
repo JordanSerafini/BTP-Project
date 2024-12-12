@@ -1,4 +1,29 @@
 services:
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_sli
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Fichier de configuration Nginx
+      - ./nginx.conf:/etc/nginx/conf.d/sli.conf
+      # Certificats SSL (Let's Encrypt)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Dossier contenant les fichiers build du frontend
+      - ./Frontend/Web/dist:/usr/share/nginx/html
+    networks:
+      - btp_db_network
+      - mongo_network
+    restart: always
+    depends_on:
+      - api_gateway
+      - frontend
+    
+
+
+
   api_gateway:
     image: node:alpine
     container_name: api_gateway
@@ -112,6 +137,9 @@ services:
     ports:
       - "5050:80"
     restart: always
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
 
 
   messagerie_service:
