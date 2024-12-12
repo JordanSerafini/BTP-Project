@@ -53,6 +53,7 @@ export class MessagerieController {
 
   // GROUPS
   @Get('groups')
+  @UseGuards(JwtAuthGuard)
   async findAllGroups(@Request() req) {
     const email = req.user?.email;
     if (!email) {

@@ -18,6 +18,7 @@ export class MessagesController {
   async findGroupsByUser(
     @Payload() payload: { email: string },
   ): Promise<Group[]> {
+    //console.log('\n \n \n  findGroupsByUser', payload, '\n \n \n \n \n \n ');
     return this.service.findGroupsByUser(payload.email);
   }
 

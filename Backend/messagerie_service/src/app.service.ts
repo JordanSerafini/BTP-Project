@@ -14,13 +14,12 @@ export class MessagerieService {
     private readonly messageModel: Model<MessageDocument>,
   ) {}
 
-  async getUserIdByEmail(email: string): Promise<string> {
+  async getUserIdByEmail(email: string): Promise<object> {
     const user = await this.userModel.findOne({ email }).exec();
     if (!user) {
       throw new NotFoundException(`User not found for email: ${email}`);
     }
-    //console.log(`User ID for ${email}: ${user._id}`);
-    return user._id.toString();
+    return user;
   }
 
   async findAllGroups(): Promise<GroupDocument[]> {
@@ -28,8 +27,10 @@ export class MessagerieService {
   }
 
   async findGroupsByUser(email: string): Promise<GroupDocument[]> {
-    const userId = await this.getUserIdByEmail(email);
-    return this.groupModel.find({ 'members.userId': userId }).exec();
+    const response = await this.getUserIdByEmail(email);
+    const userId = new Types.ObjectId(response['_id']);
+    console.log(`Converted ObjectId: ${userId}`, typeof userId);
+    return this.groupModel.find({ 'members.user_id': userId }).exec();
   }
 
   async findOneGroup(id: string, email: string): Promise<GroupDocument> {
@@ -107,16 +108,10 @@ export class MessagerieService {
   }
 
   async findAllMessagesByUser(email: string): Promise<MessageDocument[]> {
-    const userId = await this.getUserIdByEmail(email);
-    console.log(`Looking for messages with senderId: ${userId}`);
-    console.log(`Type of userId: ${typeof userId}`);
-
-    // Conversion en ObjectId
-    const objectId = new Types.ObjectId(userId);
-    console.log(`Converted ObjectId: ${objectId}`);
-
+    const response = await this.getUserIdByEmail(email);
+    const objectId = response['_id'];
     const messages = await this.messageModel
-      .find({ senderId: objectId }) // Filtre par ObjectId
+      .find({ senderId: objectId })
       .exec();
 
     console.log(`Messages found: ${messages.length}`);
