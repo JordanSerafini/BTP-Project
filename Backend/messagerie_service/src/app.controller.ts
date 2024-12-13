@@ -4,10 +4,16 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MessagerieService } from './app.service';
 import { Group } from './@types/group.interface';
 import { Message } from './@types/message.interface';
+import { User } from './@types/user.interface';
 
 @Controller()
 export class MessagesController {
   constructor(private readonly service: MessagerieService) {}
+
+  @MessagePattern('users.find_all')
+  async findAllUsers(): Promise<User[]> {
+    return this.service.findAllUsers();
+  }
 
   @MessagePattern('groups.find_all')
   async findAllGroups(): Promise<Group[]> {

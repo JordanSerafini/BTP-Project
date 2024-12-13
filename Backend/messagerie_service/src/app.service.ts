@@ -14,6 +14,10 @@ export class MessagerieService {
     private readonly messageModel: Model<MessageDocument>,
   ) {}
 
+  async findAllUsers(): Promise<UserDocument[]> {
+    return this.userModel.find().exec();
+  }
+
   async getUserIdByEmail(email: string): Promise<object> {
     const user = await this.userModel.findOne({ email }).exec();
     if (!user) {

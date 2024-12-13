@@ -51,6 +51,28 @@ export class MessagerieController {
     return { status: 200 };
   }
 
+  // Users
+  @Get('list')
+  @UseGuards(JwtAuthGuard)
+  async findAllUsers(@Request() req) {
+    const email = req.user?.email;
+    if (!email) {
+      throw new BadRequestException('Email is required in the request');
+    }
+    this.logger.log(`Fetching all users for ${email}`);
+    try {
+      return await this.messageClient
+        .send('users.find_all', { email })
+        .toPromise();
+    } catch (error) {
+      console.error('Failed to fetch all users:', error);
+      throw new HttpException(
+        'Failed to fetch users',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   // GROUPS
   @Get('groups')
   @UseGuards(JwtAuthGuard)

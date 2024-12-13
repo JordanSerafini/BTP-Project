@@ -2,6 +2,7 @@ import React, {  useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import slilogo from "../../../public/SLIlogo.png";
 import url from "../../utils/url";
+import Cookies from 'js-cookie';
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -57,9 +58,10 @@ function Login() {
         return;
       }
         //! ---------------------------------- 
-        console.log(data)
-      localStorage.setItem("token", data.token);
-      localStorage.setItem(
+        Cookies.remove('token');
+        Cookies.set('token', data.access_token, { expires: 1000, sameSite: 'Strict' });      
+        
+        localStorage.setItem(
         "user",
         JSON.stringify({
           ...data.userData,
@@ -69,6 +71,10 @@ function Login() {
           date_de_creation: undefined,
         })
       );
+
+       // Message de bienvenue
+       localStorage.setItem('welcomeMessage', `Bonjour ${data.user.prenom} ${data.user.nom}, bienvenue dans votre espace EBP.`);
+
       navigate("/");
     } catch (error) {
       console.error("Failed to login:", error);
