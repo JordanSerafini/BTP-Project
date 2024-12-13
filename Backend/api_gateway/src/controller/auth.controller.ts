@@ -50,7 +50,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  async logout(@Body() logoutDto: { user: { id: string; email: string } }) {
+  async logout(@Body() logoutDto: { user: { email: string } }) {
     try {
       return await this.authServiceClient
         .send({ cmd: 'logout' }, logoutDto)
