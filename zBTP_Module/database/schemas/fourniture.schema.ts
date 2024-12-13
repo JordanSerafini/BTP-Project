@@ -1,16 +1,22 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Fourniture {
   @Prop({ required: true })
-  user: string;
+  name: string;
 
-  @Prop({ type: Date, default: Date.now })
-  createdAt: Date;
+  @Prop()
+  description: string;
 
-  @Prop({ type: Date, default: Date.now })
-  updatedAt: Date;
+  @Prop({ required: true })
+  unit: string;
+
+  @Prop({ required: true })
+  quantity: number;
+
+  @Prop()
+  price: number;
 }
 
 export type FournitureDocument = Fourniture & Document;

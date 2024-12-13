@@ -4,9 +4,9 @@ import { MicroserviceService } from './app.service';
 import {
   CreateFournitureDto,
   UpdateFournitureDto,
-} from './dtos/fourniture.dto';
+} from '../../database/dtos/fourniture.dto';
 import { CreateOutilsDto, UpdateOutilsDto } from './dtos/outils.dto';
-import { CreatePersonelDto, UpdatePersonelDto } from './dtos/personel.dto';
+import { CreatePersonnelDto, UpdatePersonnelDto } from './dtos/personnel.dto';
 
 @Controller()
 export class MicroserviceController {
@@ -58,26 +58,26 @@ export class MicroserviceController {
     return this.microserviceService.deleteOutil(id);
   }
 
-  // Personel
-  @MessagePattern({ cmd: 'findAllPersonels' })
-  async findAllPersonels() {
-    return this.microserviceService.findAllPersonels();
+  // Personnel
+  @MessagePattern({ cmd: 'findAllpersonnels' })
+  async findAllPersonnels() {
+    return this.microserviceService.findAllPersonnels();
   }
 
-  @MessagePattern({ cmd: 'createPersonel' })
-  async createPersonel(@Payload() data: CreatePersonelDto) {
-    return this.microserviceService.createPersonel(data);
+  @MessagePattern({ cmd: 'createpersonnel' })
+  async createPersonnel(@Payload() data: CreatePersonnelDto) {
+    return this.microserviceService.createPersonnel(data);
   }
 
-  @MessagePattern({ cmd: 'updatePersonel' })
-  async updatePersonel(
-    @Payload() { id, data }: { id: string; data: UpdatePersonelDto },
+  @MessagePattern({ cmd: 'updatepersonnel' })
+  async updatePersonnel(
+    @Payload() { id, data }: { id: string; data: UpdatePersonnelDto },
   ) {
-    return this.microserviceService.updatePersonel(id, data);
+    return this.microserviceService.updatePersonnel(id, data);
   }
 
-  @MessagePattern({ cmd: 'deletePersonel' })
-  async deletePersonel(@Payload() id: string) {
-    return this.microserviceService.deletePersonel(id);
+  @MessagePattern({ cmd: 'deletepersonnel' })
+  async deletePersonnel(@Payload() id: string) {
+    return this.microserviceService.deletePersonnel(id);
   }
 }

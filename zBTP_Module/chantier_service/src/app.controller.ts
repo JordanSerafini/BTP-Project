@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ChantierService } from './app.service';
-import { CreateChantierDto, UpdateChantierDto } from './dto/ChantierDto';
+import { CreateChantierDto, UpdateChantierDto } from './dtos/ChantierDto';
 
 @Controller()
 export class ChantierController {

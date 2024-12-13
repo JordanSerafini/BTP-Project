@@ -5,11 +5,10 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://sli.tinkerbell-pentest.me'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
+    origin: '*', // Ou une liste blanche spécifique
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
-
   // Connexion au microservice chantier_service
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.TCP,

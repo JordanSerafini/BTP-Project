@@ -16,6 +16,10 @@ export class CreateChantierDto {
   notes?: string;
 
   @IsString()
+  @IsOptional()
+  commentaires?: string;  
+
+  @IsString()
   client: string;
 
   @IsString()

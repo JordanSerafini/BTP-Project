@@ -95,7 +95,7 @@ services:
       - mongo_network
     volumes:
       - mongo_data:/data/db
-      #- ./Conception/Messagerie_db/:/docker-entrypoint-initdb.d
+      #- ./database/:/docker-entrypoint-initdb.d
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: secret
@@ -106,6 +106,21 @@ services:
       timeout: 5s
       retries: 5
   
+  mongo_seed:
+    image: node:alpine
+    container_name: mongo_seed
+    depends_on:
+      mongo_db:
+        condition: service_healthy
+    working_dir: /app
+    volumes:
+      - ./database:/app
+    command: sh -c "npm install mongoose && node init.js"
+    networks:
+      - mongo_network
+
+
+
   redis:
     image: redis:latest
     container_name: redis
@@ -125,20 +140,26 @@ services:
   mongo_express:
     image: mongo-express:latest
     container_name: mongo_express
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo_db
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_OPTIONS_EDITORTHEME: "default" 
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: secret
+      ME_CONFIG_MONGODB_URL: "mongodb://admin:secret@mongo_db:27017/btp_module_db?authSource=admin"
     ports:
       - "8081:8081"
+    depends_on:
+      - mongo_db
     networks:
       - mongo_network
-    restart: on-failure:5
-    environment:
-      ME_CONFIG_MONGODB_SERVER: "mongo_db"
-      ME_CONFIG_MONGODB_ADMINUSERNAME: "admin"
-      ME_CONFIG_MONGODB_ADMINPASSWORD: "secret"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
 
 networks:
   mongo_network:
@@ -148,3 +169,4 @@ networks:
 volumes:
   mongo_data:
   redis_data:
+  

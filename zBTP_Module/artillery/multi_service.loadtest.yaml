@@ -1,0 +1,137 @@
+config:
+  target: "http://localhost:3000" 
+  phases:
+    - duration: 30
+      arrivalRate: 2
+      rampTo: 12
+      name: Warm up phase
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 15
+      name: Ramp up load
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 25
+      name: Spike phase
+    - duration: 30
+      arrivalRate: 25
+      rampTo: 5
+      name: Recovery phase
+  plugins:
+    ensure: {}
+    metrics-by-endpoint: {}
+    apdex: {}
+  ensure:
+    maxErrorRate: 0.01
+    thresholds:
+      - http.response_time.p99: 850
+      - http.response_time.p95: 500
+      - http.response_time.mean: 300
+      - http.requests.count: 1000
+apdex:
+  threshold: 500
+
+scenarios:
+  # Scénario pour le service "Personnel"
+  - name: "Test Personnel_service"
+    flow:
+      - get:
+          url: "/personnels"
+          expect:
+            statusCode: 200
+      - post:
+          url: "/personnels"
+          json:
+            name: "Jean Dupont"
+            role: "Carreleur"
+            active: true
+            phone: "0601020304"
+            email: "test@test.com"
+          expect:
+            statusCode: 201
+          capture:
+            - json: "$.id" 
+              as: personnelId
+      - put:
+          url: "/personnels/{{ personnelId }}"          
+          json:
+            user: "Admin"
+            name: "Jean Dupont"
+            role: "Chef d'équipe"
+            active: false
+          expect:
+            statusCode: 200
+      - delete:
+          url: "/personnels/{{ personnelId }}"
+          expect:
+            statusCode: 204
+
+  # Scénario pour le service "Outils"
+  - name: "Test Outils_service"
+    flow:
+      - get:
+          url: "/outils"
+          expect:
+            statusCode: 200
+      - post:
+          url: "/outils"
+          json:
+            numero_serie: "123456789"
+            title: "Marteau"
+            description: "Un marteau robuste pour travaux de carrelage"
+            notes: "Utilisé pour casser des carreaux"
+            quantite: 20
+            quantite_disponible: 15
+          expect:
+            statusCode: 201
+      - put:
+          url: "/outils/64d2f7bc8e97b123456789ac"
+          json:
+            numero_serie: "123456789"
+            title: "Marteau modifié"
+            description: "Marteau robuste pour travaux lourds"
+            notes: "Révisé avec un meilleur manche"
+            quantite: 20
+            quantite_disponible: 10
+          expect:
+            statusCode: 200
+      - delete:
+          url: "/outils/64d2f7bc8e97b123456789ac"
+          expect:
+            statusCode: 204
+
+  # Scénario pour le service "Fournitures"
+  - name: "Test Fournitures_service"
+    flow:
+      - get:
+          url: "/fournitures"
+          expect:
+            statusCode: 200
+      - post:
+          url: "/fournitures"
+          json:
+            user: "Admin"
+            name: "Carrelage 30x30"
+            description: "Carrelage blanc brillant pour salle de bain"
+            unit: "m²"
+            quantity: 50
+            unit_price: 10.5
+            total_price: 525
+          expect:
+            statusCode: 201
+      - put:
+          url: "/fournitures/64d2f7bc8e97b123456789ad"
+          json:
+            user: "Admin"
+            name: "Carrelage 30x30"
+            description: "Carrelage blanc mat antidérapant pour terrasse"
+            unit: "m²"
+            quantity: 60
+            unit_price: 10.5
+            total_price: 630
+          expect:
+            statusCode: 200
+      - delete:
+          url: "/fournitures/64d2f7bc8e97b123456789ad"
+          expect:
+            statusCode: 204
