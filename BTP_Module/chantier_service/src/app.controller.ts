@@ -1,48 +1,37 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
-  Body,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ChantierService } from './app.service';
 import { CreateChantierDto, UpdateChantierDto } from './dto/ChantierDto';
 
-@Controller('chantiers')
+@Controller()
 export class ChantierController {
   constructor(private readonly chantierService: ChantierService) {}
 
-  @Get()
+  @MessagePattern({ cmd: 'findAll' })
   async findAll() {
     return this.chantierService.findAll();
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
+  @MessagePattern({ cmd: 'findOne' })
+  async findOne(@Payload() id: string) {
     return this.chantierService.findOne(id);
   }
 
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createChantierDto: CreateChantierDto) {
+  @MessagePattern({ cmd: 'create' })
+  async create(@Payload() createChantierDto: CreateChantierDto) {
     return this.chantierService.create(createChantierDto);
   }
 
-  @Put(':id')
+  @MessagePattern({ cmd: 'update' })
   async update(
-    @Param('id') id: string,
-    @Body() updateChantierDto: UpdateChantierDto,
+    @Payload() payload: { id: string; updateChantierDto: UpdateChantierDto },
   ) {
+    const { id, updateChantierDto } = payload;
     return this.chantierService.update(id, updateChantierDto);
   }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param('id') id: string) {
+  @MessagePattern({ cmd: 'delete' })
+  async delete(@Payload() id: string) {
     return this.chantierService.delete(id);
   }
 }
