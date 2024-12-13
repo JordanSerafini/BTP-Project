@@ -19,6 +19,24 @@ async function bootstrap() {
     },
   });
 
+  // Connexion au microservice devis_service
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.TCP,
+    options: {
+      port: 4445,
+      // host: 'devis_service',
+    },
+  });
+
+  // Connexion au microservice multi_service
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.TCP,
+    options: {
+      port: 4446,
+      // host: 'multi_service',
+    },
+  });
+
   await app.startAllMicroservices();
   await app.listen(3000);
 

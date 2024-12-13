@@ -1,0 +1,150 @@
+services:
+
+  api_gateway:
+    image: node:alpine
+    container_name: api_gateway
+    working_dir: /app
+    restart: always
+    volumes:
+      - ./api_gateway:/app
+      - /app/node_modules
+    ports:
+      - 3000:3000
+    networks:
+      - mongo_network
+    command: sh -c "npm install && npm run start:dev"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  chantier_service:
+    image: node:alpine
+    container_name: chantier_service
+    working_dir: /app
+    restart: on-failure:5
+    volumes:
+      - ./chantier_service:/app
+      - /app/node_modules
+    ports:
+      - 4444:4444
+    networks:
+      - mongo_network
+    environment:
+      MONGO_URL: "mongodb://admin:secret@mongo_db:27017/btp_module_db?authSource=admin"
+      REDIS_URL: "redis://redis:6379"
+    command: sh -c "npm install && npm run start:dev"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/chantiers"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    
+  devis_service:
+    image: node:alpine
+    container_name: devis_service
+    working_dir: /app
+    restart: on-failure:5
+    volumes:
+      - ./devis_service:/app
+      - /app/node_modules
+    ports:
+      - 4445:4445
+    networks:
+      - mongo_network
+    environment:
+      MONGO_URL: "mongodb://admin:secret@mongo_db:27017/btp_module_db?authSource=admin"
+      REDIS_URL: "redis://redis:6379"
+    command: sh -c "npm install && npm run start:dev"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4445/devis"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  multi_service:
+    image: node:alpine
+    container_name: multi_service
+    working_dir: /app
+    volumes:
+      - ./multi_service:/app
+      - /app/node_modules
+    ports:
+      - 4446:4446
+    networks:
+      - mongo_network
+    restart: on-failure:5
+    environment:
+      MONGO_URL: "mongodb://admin:secret@mongo_db:27017/btp_module_db?authSource=admin"
+      REDIS_URL: "redis://redis:6379"
+    command: sh -c "npm install && npm run start:dev"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4446/multi"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  mongo_db:
+    image: mongo:latest
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    restart: always
+    networks:
+      - mongo_network
+    volumes:
+      - mongo_data:/data/db
+      #- ./Conception/Messagerie_db/:/docker-entrypoint-initdb.d
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    command: ["mongod", "--bind_ip_all"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      - mongo_network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo_express:
+    image: mongo-express:latest
+    container_name: mongo_express
+    ports:
+      - "8081:8081"
+    networks:
+      - mongo_network
+    restart: on-failure:5
+    environment:
+      ME_CONFIG_MONGODB_SERVER: "mongo_db"
+      ME_CONFIG_MONGODB_ADMINUSERNAME: "admin"
+      ME_CONFIG_MONGODB_ADMINPASSWORD: "secret"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  mongo_network:
+    driver: bridge
+    attachable: true
+
+volumes:
+  mongo_data:
+  redis_data:
