@@ -7,8 +7,8 @@ import { Personnel, PersonnelDocument } from './schemas/personnel.schema';
 import {
   CreateFournitureDto,
   UpdateFournitureDto,
-} from '../../database/dtos/fourniture.dto';
-import { CreateOutilsDto, UpdateOutilsDto } from '../../database/dtos/outils.dto';
+} from './dtos/fourniture.dto';
+import { CreateOutilsDto, UpdateOutilsDto } from './dtos/outils.dto';
 import { CreatePersonnelDto, UpdatePersonnelDto } from './dtos/personnel.dto';
 
 @Injectable()

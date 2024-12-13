@@ -4,7 +4,7 @@ import { MicroserviceService } from './app.service';
 import {
   CreateFournitureDto,
   UpdateFournitureDto,
-} from '../../database/dtos/fourniture.dto';
+} from './dtos/fourniture.dto';
 import { CreateOutilsDto, UpdateOutilsDto } from './dtos/outils.dto';
 import { CreatePersonnelDto, UpdatePersonnelDto } from './dtos/personnel.dto';
 
